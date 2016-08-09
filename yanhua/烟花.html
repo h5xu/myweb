@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>Document</title>
+	<style type="text/css">
+		*{margin: 0; padding: 0;}
+		html,body{overflow:hidden;background:#000;}
+		/*用来当做发射器div的样式*/
+		.launcher {
+			width: 3px;
+			height: 30px;
+			background: white;
+			position: absolute;
+		} 
+		/*用来作为火花粒子的div的样式*/
+		.spark {
+			position: absolute;
+			width: 3px;
+			height: 3px;
+		}
+	</style>
+	
+</head>
+<body>
+</body>
+<script src="startMove.js"></script>
+<script type="text/javascript">
+function randomColor(){	
+	var R= Math.round(Math.random()*255).toString(16);
+	var G= Math.round(Math.random()*255).toString(16);
+	var B= Math.round(Math.random()*255).toString(16);
+	
+	return "#"+( R.length>1 ? R :"0"+R ) + ( G.length>1 ? G :"0"+G ) + (B.length>1 ? B:"0"+B )
+	
+}
+
+		//在文档范围内单击
+		document.onclick=function(ev){
+			ev=ev||window.event;
+			//执行发射，传入鼠标坐标
+			launch({left:ev.clientX,top:ev.clientY});
+
+		}
+		function launch(coord){
+			//创建一个div 发射器
+			var launcher=document.createElement("div");
+			//添加样式
+			launcher.className="launcher";
+			//将发射器设置初始位置
+			launcher.style.left=coord.left+"px";
+			launcher.style.top=document.documentElement.clientHeight+"px";
+			//添加此节点到页面中
+			document.body.appendChild(launcher);
+			//向目标点进发
+			startMove(launcher, {
+				top:coord.top,
+				height:3
+			}, function(){
+				//回调里面移除节点
+				document.body.removeChild(launcher);
+				//执行爆炸
+				explode(coord);
+			});
+		}
+		
+		function explode(target){
+			//随机产生30-80个小div、
+			var count=Math.round(Math.random()*50)+30;
+			for(var i=0;i<count;i++){
+				//每次循环的时候，创建出来一个div
+				var spark=document.createElement("div");
+				//调用构造函数
+				var s=new Spark(spark,target);	
+				/*s.moveFn();*/
+			};
+		}
+		function Spark(obj,coord){
+			this.obj=obj;
+			//小火花的出发点
+			this.pos=coord;
+			this.speedX=null;
+			this.speedY=null;
+			this.timer=null;
+			this.init();
+			this.moveFn();
+		}
+		//给火花做初始化的准备工作
+		Spark.prototype.init=function(){
+			//随机给水平速度  1-20之间的速度  正负随机
+			this.speedX=(Math.floor(Math.random()*20)+1)*(Math.random()>0.5 ? 1  : -1 );
+			this.speedY=(Math.floor(Math.random()*20)+1)*(Math.random()>0.5 ? 1  : -1 );
+			//随机背景颜色
+			this.obj.style.background=randomColor();
+			//设定好初始位置
+			this.obj.style.left=this.pos.left+"px";
+			this.obj.style.top=this.pos.top+"px";
+			//给它添加相应的样式
+			this.obj.className="spark";
+			//往页面中添加此节点
+			document.body.appendChild(this.obj);
+		}
+		Spark.prototype.moveFn=function(){
+			var that=this;
+			this.timer=setInterval(function(){
+				that.obj.style.left=that.obj.offsetLeft+that.speedX+"px";
+				that.obj.style.top=that.obj.offsetTop+that.speedY++ +"px";
+				
+				if(that.obj.offsetTop>document.documentElement.clientHeight){
+					clearInterval(that.timer);
+					document.body.removeChild(that.obj);
+				}
+				
+			},30)
+			
+			
+			
+			
+			
+		}
+</script>
+</html>
